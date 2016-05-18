@@ -12,7 +12,7 @@ func failOnError(err error, msg string) {
 		panic(fmt.Sprintf("%s: %s", msg, err))
 	}
 }
-func main() {
+func rabbitsend(jsondata string) {
 	conn, err := amqp.Dial("amqp://test:test@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -44,7 +44,7 @@ func main() {
     nil,
   )
 	failOnError(err, "Failed to declare a queue")
-	body := "{\"a\": 1, \"b\":\"c\"}"
+	body := jsondata
 	err = ch.Publish(
 		"mse",     // exchange
 		"mse", // routing key

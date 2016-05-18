@@ -6,11 +6,25 @@ import (
     "log"
     "net/http"
     "encoding/json"
+    "github.com/google/uuid"
+    "strconv"
 )
 
 type jsonData struct {
     User string
     Sql  string
+}
+
+
+type outPut struct {
+    Uuid string `json:"uuid"`
+    User string `json:"user"`
+    Sql string  `json:"sql"`
+}
+
+type outHtmlText struct {
+    Uuid string `json:"uuid"`
+    State string `json:"state"`
 }
 
 
@@ -43,14 +57,38 @@ func main() {
     
     http.HandleFunc("/api/post", func(w http.ResponseWriter, r *http.Request) {  
         //get "POST" request
-        if r.Method == "POST" {  
+        if r.Method == "POST" {
+            uuid4 := uuid.New()
+            uuidstring := uuid4.String()
              decoder := json.NewDecoder(r.Body)
              var t jsonData   
              err := decoder.Decode(&t)
              if err != nil {
                  panic(err)
              }
-             log.Println(t.User, t.Sql)
+             
+             m := &outPut{
+                 Uuid: uuidstring,
+                 User: t.User,
+                 Sql: t.Sql,
+             }
+             
+             mjson, _ := json.Marshal(m)
+             
+             
+             h := &outHtmlText{
+                 Uuid: uuidstring,
+                 State: "init",
+             }
+             hjson, _ := json.Marshal(h)
+             w.Header().Set("Content-Type", "application/json")
+             fmt.Fprintf(w, string(hjson))
+             r.Header.Write(w)
+             
+             log.Println(t)
+             
+             rabbitsend(string(mjson))
+             redissend(uuidstring,"httpStatus",strconv.Itoa(http.StatusOK),"status","init")
         } 
     })
     
