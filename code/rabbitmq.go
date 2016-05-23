@@ -1,9 +1,9 @@
 package main
 
 import (
-  "fmt"
-  "log"
-  "github.com/streadway/amqp"
+	"fmt"
+	"github.com/streadway/amqp"
+	"log"
 )
 
 func failOnError(err error, msg string) {
@@ -13,43 +13,43 @@ func failOnError(err error, msg string) {
 	}
 }
 func rabbitsend(jsondata string) {
-	conn, err := amqp.Dial("amqp://test:test@localhost:5672/")
+	conn, err := amqp.Dial("amqp://test:test@rabbitmq:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
-  err = ch.ExchangeDeclare(
-    "mse",
-    "topic",
-    true,
-    false,
-    false,
-    false,
-    nil,
-  )
+	err = ch.ExchangeDeclare(
+		"mse",
+		"topic",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
 	q, err := ch.QueueDeclare(
 		"mse", // name
-		true,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		true,  // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
 	)
-  err = ch.QueueBind(
-    q.Name,
-    "mse",
-    "mse",
-    false,
-    nil,
-  )
+	err = ch.QueueBind(
+		q.Name,
+		"mse",
+		"mse",
+		false,
+		nil,
+	)
 	failOnError(err, "Failed to declare a queue")
 	body := jsondata
 	err = ch.Publish(
-		"mse",     // exchange
+		"mse", // exchange
 		"mse", // routing key
-		false,  // mandatory
-		false,  // immediate
+		false, // mandatory
+		false, // immediate
 		amqp.Publishing{
 			ContentType: "text/json",
 			Body:        []byte(body),

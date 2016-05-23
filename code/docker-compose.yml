@@ -1,0 +1,28 @@
+version: '2'
+services:
+  web:
+    build: .
+    volumes:
+      - .:/code
+    ports:
+      - "8443:8443"
+    depends_on:
+      - redis
+      - rabbitmq
+    links:
+      - redis
+      - rabbitmq
+  
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: test
+      RABBITMQ_DEFAULT_PASS: test
+   
